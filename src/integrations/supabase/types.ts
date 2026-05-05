@@ -134,6 +134,114 @@ export type Database = {
         }
         Relationships: []
       }
+      email_logs: {
+        Row: {
+          created_at: string
+          error: string | null
+          id: string
+          recipient: string
+          status: string
+          subject: string | null
+          template_key: string | null
+        }
+        Insert: {
+          created_at?: string
+          error?: string | null
+          id?: string
+          recipient: string
+          status: string
+          subject?: string | null
+          template_key?: string | null
+        }
+        Update: {
+          created_at?: string
+          error?: string | null
+          id?: string
+          recipient?: string
+          status?: string
+          subject?: string | null
+          template_key?: string | null
+        }
+        Relationships: []
+      }
+      email_settings: {
+        Row: {
+          enabled: boolean
+          from_email: string | null
+          from_name: string | null
+          id: number
+          mail_driver: string
+          reply_to: string | null
+          smtp_encryption: string
+          smtp_host: string | null
+          smtp_pass: string | null
+          smtp_port: number | null
+          smtp_user: string | null
+          updated_at: string
+        }
+        Insert: {
+          enabled?: boolean
+          from_email?: string | null
+          from_name?: string | null
+          id?: number
+          mail_driver?: string
+          reply_to?: string | null
+          smtp_encryption?: string
+          smtp_host?: string | null
+          smtp_pass?: string | null
+          smtp_port?: number | null
+          smtp_user?: string | null
+          updated_at?: string
+        }
+        Update: {
+          enabled?: boolean
+          from_email?: string | null
+          from_name?: string | null
+          id?: number
+          mail_driver?: string
+          reply_to?: string | null
+          smtp_encryption?: string
+          smtp_host?: string | null
+          smtp_pass?: string | null
+          smtp_port?: number | null
+          smtp_user?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      email_templates: {
+        Row: {
+          active: boolean
+          body: string
+          created_at: string
+          id: string
+          key: string
+          name: string
+          subject: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          body: string
+          created_at?: string
+          id?: string
+          key: string
+          name: string
+          subject: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          body?: string
+          created_at?: string
+          id?: string
+          key?: string
+          name?: string
+          subject?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       exchange_transactions: {
         Row: {
           created_at: string
@@ -203,6 +311,42 @@ export type Database = {
           id?: string
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      impersonation_log: {
+        Row: {
+          admin_email: string | null
+          admin_id: string
+          ended_at: string | null
+          id: string
+          ip: string | null
+          started_at: string
+          target_email: string | null
+          target_user_id: string
+          user_agent: string | null
+        }
+        Insert: {
+          admin_email?: string | null
+          admin_id: string
+          ended_at?: string | null
+          id?: string
+          ip?: string | null
+          started_at?: string
+          target_email?: string | null
+          target_user_id: string
+          user_agent?: string | null
+        }
+        Update: {
+          admin_email?: string | null
+          admin_id?: string
+          ended_at?: string | null
+          id?: string
+          ip?: string | null
+          started_at?: string
+          target_email?: string | null
+          target_user_id?: string
+          user_agent?: string | null
         }
         Relationships: []
       }
@@ -316,29 +460,35 @@ export type Database = {
       }
       notifications: {
         Row: {
+          audience_count: number | null
           body: string | null
           broadcast: boolean
           created_at: string
           id: string
           read: boolean
+          segment: string | null
           title: string
           user_id: string | null
         }
         Insert: {
+          audience_count?: number | null
           body?: string | null
           broadcast?: boolean
           created_at?: string
           id?: string
           read?: boolean
+          segment?: string | null
           title: string
           user_id?: string | null
         }
         Update: {
+          audience_count?: number | null
           body?: string | null
           broadcast?: boolean
           created_at?: string
           id?: string
           read?: boolean
+          segment?: string | null
           title?: string
           user_id?: string | null
         }
@@ -350,66 +500,84 @@ export type Database = {
           address_line2: string | null
           avatar_url: string | null
           banned: boolean
+          banned_reason: string | null
           city: string | null
           country: string | null
+          country_code: string | null
           created_at: string
           dob: string | null
           email: string | null
           email_verified: boolean
+          first_name: string | null
           full_name: string | null
           id: string
           id_number: string | null
           kyc_status: Database["public"]["Enums"]["kyc_status"]
+          last_name: string | null
           mobile_verified: boolean
           notes: string | null
           phone: string | null
           postal_code: string | null
           state: string | null
+          two_factor_enabled: boolean
           updated_at: string
+          username: string | null
         }
         Insert: {
           address_line1?: string | null
           address_line2?: string | null
           avatar_url?: string | null
           banned?: boolean
+          banned_reason?: string | null
           city?: string | null
           country?: string | null
+          country_code?: string | null
           created_at?: string
           dob?: string | null
           email?: string | null
           email_verified?: boolean
+          first_name?: string | null
           full_name?: string | null
           id: string
           id_number?: string | null
           kyc_status?: Database["public"]["Enums"]["kyc_status"]
+          last_name?: string | null
           mobile_verified?: boolean
           notes?: string | null
           phone?: string | null
           postal_code?: string | null
           state?: string | null
+          two_factor_enabled?: boolean
           updated_at?: string
+          username?: string | null
         }
         Update: {
           address_line1?: string | null
           address_line2?: string | null
           avatar_url?: string | null
           banned?: boolean
+          banned_reason?: string | null
           city?: string | null
           country?: string | null
+          country_code?: string | null
           created_at?: string
           dob?: string | null
           email?: string | null
           email_verified?: boolean
+          first_name?: string | null
           full_name?: string | null
           id?: string
           id_number?: string | null
           kyc_status?: Database["public"]["Enums"]["kyc_status"]
+          last_name?: string | null
           mobile_verified?: boolean
           notes?: string | null
           phone?: string | null
           postal_code?: string | null
           state?: string | null
+          two_factor_enabled?: boolean
           updated_at?: string
+          username?: string | null
         }
         Relationships: []
       }
@@ -817,7 +985,18 @@ export type Database = {
         }
         Returns: boolean
       }
+      lookup_email_for_login: { Args: { _identifier: string }; Returns: string }
       record_login: { Args: { _ip?: string; _ua?: string }; Returns: undefined }
+      send_notification_segment: {
+        Args: {
+          _body: string
+          _segment: string
+          _target_user?: string
+          _title: string
+        }
+        Returns: number
+      }
+      set_username: { Args: { _username: string }; Returns: boolean }
       update_price_cache: { Args: { _prices: Json }; Returns: undefined }
     }
     Enums: {
