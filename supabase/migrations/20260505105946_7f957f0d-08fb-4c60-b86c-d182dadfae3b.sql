@@ -1,0 +1,1 @@
+DELETE FROM public.deposits a USING public.deposits b WHERE a.ctid < b.ctid AND a.tx_hash = b.tx_hash AND a.user_id = b.user_id AND a.tx_hash IS NOT NULL;
