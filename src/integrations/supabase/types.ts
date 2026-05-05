@@ -822,7 +822,7 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "user"
-      kyc_status: "none" | "pending" | "approved" | "rejected"
+      kyc_status: "none" | "pending" | "approved" | "rejected" | "unverified"
       stake_status: "active" | "completed" | "cancelled"
       trade_side: "buy" | "sell" | "long" | "short"
       trade_status: "open" | "closed" | "cancelled"
@@ -955,7 +955,7 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "user"],
-      kyc_status: ["none", "pending", "approved", "rejected"],
+      kyc_status: ["none", "pending", "approved", "rejected", "unverified"],
       stake_status: ["active", "completed", "cancelled"],
       trade_side: ["buy", "sell", "long", "short"],
       trade_status: ["open", "closed", "cancelled"],
