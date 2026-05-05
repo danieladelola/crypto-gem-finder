@@ -791,6 +791,25 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_adjust_balance: {
+        Args: {
+          _asset: string
+          _delta: number
+          _reason?: string
+          _target: string
+        }
+        Returns: string
+      }
+      execute_exchange: {
+        Args: {
+          _fee_pct: number
+          _from_amount: number
+          _from_asset: string
+          _rate: number
+          _to_asset: string
+        }
+        Returns: string
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -798,6 +817,8 @@ export type Database = {
         }
         Returns: boolean
       }
+      record_login: { Args: { _ip?: string; _ua?: string }; Returns: undefined }
+      update_price_cache: { Args: { _prices: Json }; Returns: undefined }
     }
     Enums: {
       app_role: "admin" | "user"
