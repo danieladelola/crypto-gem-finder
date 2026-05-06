@@ -36,13 +36,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             .then(({ data }) => setRoles((data ?? []).map((r: any) => r.role)));
           // Record login event (best-effort; silent on failure)
           if (event === "SIGNED_IN") {
-            const urlParams = new URLSearchParams(window.location.search);
-            if (urlParams.get('impersonate') === '1') {
-              sessionStorage.setItem("impersonation_target_email", urlParams.get('target_email') || '');
-              sessionStorage.setItem("impersonation_admin_id", "yes");
-              // Clean URL
-              window.history.replaceState(null, '', window.location.pathname + window.location.hash);
-            }
             supabase.rpc("record_login", { _ip: null, _ua: navigator.userAgent }).then(() => {});
           }
         }, 0);

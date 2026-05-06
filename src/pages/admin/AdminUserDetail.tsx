@@ -16,7 +16,7 @@ import { toast } from "sonner";
 import { format } from "date-fns";
 import {
   ArrowLeft, Save, Loader2, ShieldOff, Shield, KeyRound, Plus, Minus,
-  History, Bell, Ban, LogIn, ShoppingBag, TrendingUp, ArrowDownToLine, ArrowUpFromLine, Mail
+  History, Bell, Ban, ShoppingBag, TrendingUp, ArrowDownToLine, ArrowUpFromLine, Mail
 } from "lucide-react";
 
 const KYC_OPTIONS = ["none", "unverified", "pending", "approved", "rejected"];
@@ -83,6 +83,15 @@ export default function AdminUserDetail() {
     enabled: !!id,
   });
 
+  const { data: stakings = [] } = useQuery({
+    queryKey: ["admin-user-stakings", id],
+    queryFn: async () => (await supabase.from("user_stakes").select(`
+      *,
+      staking_plans:plan_id (name, coin, apy, lock_days)
+    `).eq("user_id", id).order("created_at", { ascending: false })).data ?? [],
+    enabled: !!id,
+  });
+
   const [form, setForm] = useState<any>(null);
   const [saving, setSaving] = useState(false);
   useEffect(() => { if (profile) setForm(profile); }, [profile]);
@@ -104,8 +113,6 @@ export default function AdminUserDetail() {
   const [banOpen, setBanOpen] = useState(false);
   const [banReason, setBanReason] = useState("");
   const [banBusy, setBanBusy] = useState(false);
-
-  const [impBusy, setImpBusy] = useState(false);
 
   async function saveProfile() {
     if (!form) return;
@@ -184,20 +191,6 @@ export default function AdminUserDetail() {
     qc.invalidateQueries({ queryKey: ["admin-user", id] });
   }
 
-  async function loginAsUser() {
-    setImpBusy(true);
-    const { data, error } = await supabase.functions.invoke("admin-impersonate", {
-      body: { action: "impersonate", target_user_id: id },
-    });
-    setImpBusy(false);
-    if (error || !data?.action_link) return toast.error(error?.message || "Failed");
-    // Construct the correct URL: app root with impersonation params and auth hash
-    const url = new URL(data.action_link);
-    const hash = url.hash;
-    const newUrl = window.location.origin + '/?impersonate=1&target_email=' + encodeURIComponent(profile?.email ?? '') + hash;
-    window.open(newUrl, '_blank');
-  }
-
   if (isLoading || !form) {
     return <div className="flex items-center justify-center py-20"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>;
   }
@@ -243,10 +236,6 @@ export default function AdminUserDetail() {
           <Button size="sm" variant={profile.banned ? "outline" : "destructive"} onClick={() => setBanOpen(true)}>
             <Ban className="h-4 w-4 mr-1" />{profile.banned ? "Unban User" : "Ban User"}
           </Button>
-          <Button size="sm" onClick={loginAsUser} disabled={impBusy} className="bg-gradient-primary">
-            {impBusy ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <LogIn className="h-4 w-4 mr-1" />}
-            Login as User
-          </Button>
           <Button size="sm" variant="outline" onClick={confirmEmailServer}><Mail className="h-4 w-4 mr-1" />Confirm Email (auth)</Button>
         </CardContent>
       </Card>
@@ -254,11 +243,12 @@ export default function AdminUserDetail() {
       <div className="grid lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2">
           <Tabs defaultValue="profile">
-            <TabsList className="grid grid-cols-4 w-full">
+            <TabsList className="grid grid-cols-5 w-full">
               <TabsTrigger value="profile">Profile</TabsTrigger>
               <TabsTrigger value="logins" id="tab-logins">Logins</TabsTrigger>
               <TabsTrigger value="notifs">Notifications</TabsTrigger>
               <TabsTrigger value="balances">Balances</TabsTrigger>
+              <TabsTrigger value="stakings">Stakings</TabsTrigger>
             </TabsList>
 
             <TabsContent value="profile" className="mt-4">
@@ -336,6 +326,46 @@ export default function AdminUserDetail() {
                         <span className="block">{Number(b.available).toFixed(8)}</span>
                         {Number(b.staked) > 0 && <span className="text-xs text-muted-foreground">staked: {Number(b.staked).toFixed(8)}</span>}
                       </span>
+                    </div>
+                  ))}
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="stakings" className="mt-4">
+              <Card className="bg-gradient-card border-border/60">
+                <CardHeader><CardTitle>All stakings</CardTitle></CardHeader>
+                <CardContent className="space-y-2">
+                  {stakings.length === 0 && <div className="text-sm text-muted-foreground">No stakings.</div>}
+                  {stakings.map((s: any) => (
+                    <div key={s.id} className="text-sm border-b border-border/40 last:border-0 py-2">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <span className="font-medium">{s.staking_plans?.name || 'Unknown Plan'}</span>
+                          <span className="text-xs text-muted-foreground ml-2">({s.coin})</span>
+                        </div>
+                        <StatusBadge status={s.status} />
+                      </div>
+                      <div className="grid grid-cols-2 gap-4 mt-2 text-xs">
+                        <div>
+                          <span className="text-muted-foreground">Amount:</span> {Number(s.amount).toFixed(8)} {s.coin}
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground">APY:</span> {s.apy}%
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground">Reward Earned:</span> {Number(s.reward_earned).toFixed(8)} {s.coin}
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground">Lock Days:</span> {s.staking_plans?.lock_days || 'N/A'}
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground">Started:</span> {format(new Date(s.started_at), "MMM d, yyyy")}
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground">Ends:</span> {format(new Date(s.ends_at), "MMM d, yyyy")}
+                        </div>
+                      </div>
                     </div>
                   ))}
                 </CardContent>

@@ -54,15 +54,6 @@ Deno.serve(async (req) => {
     }
 
     if (action === "impersonate") {
-      // Generate magic link
-      const { data: link, error: lErr } = await admin.auth.admin.generateLink({
-        type: "magiclink",
-        email: targetEmail,
-      });
-      if (lErr || !link?.properties?.action_link) {
-        return json({ error: lErr?.message || "Failed to generate link" }, 500);
-      }
-
       // Log
       await admin.from("impersonation_log").insert({
         admin_id: adminId,
@@ -73,7 +64,7 @@ Deno.serve(async (req) => {
         user_agent: req.headers.get("user-agent") ?? null,
       });
 
-      return json({ ok: true, action_link: link.properties.action_link });
+      return json({ ok: true, email: targetEmail });
     }
 
     return json({ error: "Unknown action" }, 400);
