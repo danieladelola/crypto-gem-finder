@@ -92,6 +92,12 @@ export default function AdminUserDetail() {
     enabled: !!id,
   });
 
+  const { data: deposits = [] } = useQuery({
+    queryKey: ["admin-user-deposits", id],
+    queryFn: async () => (await supabase.from("deposits").select("*").eq("user_id", id).order("created_at", { ascending: false }).limit(50)).data ?? [],
+    enabled: !!id,
+  });
+
   const [form, setForm] = useState<any>(null);
   const [saving, setSaving] = useState(false);
   useEffect(() => { if (profile) setForm(profile); }, [profile]);
@@ -243,12 +249,13 @@ export default function AdminUserDetail() {
       <div className="grid lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2">
           <Tabs defaultValue="profile">
-            <TabsList className="grid grid-cols-5 w-full">
+            <TabsList className="grid grid-cols-6 w-full">
               <TabsTrigger value="profile">Profile</TabsTrigger>
               <TabsTrigger value="logins" id="tab-logins">Logins</TabsTrigger>
               <TabsTrigger value="notifs">Notifications</TabsTrigger>
               <TabsTrigger value="balances">Balances</TabsTrigger>
               <TabsTrigger value="stakings">Stakings</TabsTrigger>
+              <TabsTrigger value="deposits">Deposits</TabsTrigger>
             </TabsList>
 
             <TabsContent value="profile" className="mt-4">
@@ -366,6 +373,56 @@ export default function AdminUserDetail() {
                           <span className="text-muted-foreground">Ends:</span> {format(new Date(s.ends_at), "MMM d, yyyy")}
                         </div>
                       </div>
+                    </div>
+                  ))}
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="deposits" className="mt-4">
+              <Card className="bg-gradient-card border-border/60">
+                <CardHeader><CardTitle>Deposit history</CardTitle></CardHeader>
+                <CardContent className="space-y-2">
+                  {deposits.length === 0 && <div className="text-sm text-muted-foreground">No deposits.</div>}
+                  {deposits.map((d: any) => (
+                    <div key={d.id} className="text-sm border-b border-border/40 last:border-0 py-2">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <span className="font-medium">{d.coin} Deposit</span>
+                          <span className="text-xs text-muted-foreground ml-2">({d.status})</span>
+                        </div>
+                        <StatusBadge status={d.status} />
+                      </div>
+                      <div className="grid grid-cols-2 gap-4 mt-2 text-xs">
+                        <div>
+                          <span className="text-muted-foreground">Amount:</span> {Number(d.amount).toFixed(8)} {d.coin}
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground">USD Value:</span> ${Number(d.usd_amount || 0).toFixed(2)}
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground">USD Credited:</span> ${Number(d.usd_credited || 0).toFixed(2)}
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground">Payment:</span> {d.pay_amount ? `${Number(d.pay_amount).toFixed(8)} ${d.pay_coin}` : 'N/A'}
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground">Created:</span> {format(new Date(d.created_at), "MMM d, yyyy p")}
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground">Processed:</span> {d.processed_at ? format(new Date(d.processed_at), "MMM d, yyyy p") : 'Pending'}
+                        </div>
+                      </div>
+                      {d.tx_hash && (
+                        <div className="mt-2 text-xs">
+                          <span className="text-muted-foreground">TX Hash:</span> <span className="font-mono break-all">{d.tx_hash}</span>
+                        </div>
+                      )}
+                      {d.admin_note && (
+                        <div className="mt-1 text-xs text-muted-foreground">
+                          Note: {d.admin_note}
+                        </div>
+                      )}
                     </div>
                   ))}
                 </CardContent>
