@@ -9,8 +9,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { StatusBadge } from "@/components/StatusBadge";
-import { Coins, Lock, TrendingUp, DollarSign } from "lucide-react";
+import { Coins, Lock, TrendingUp, DollarSign, Wallet, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
 import { format, addDays } from "date-fns";
 
@@ -65,6 +66,49 @@ export default function Stake() {
       </div>
 
       <div>
+        <Sheet>
+          <SheetTrigger asChild>
+            <button className="w-full mb-4 rounded-xl border border-border/60 bg-gradient-primary text-primary-foreground p-4 flex items-center justify-between hover:opacity-95 transition">
+              <div className="flex items-center gap-3">
+                <div className="h-10 w-10 rounded-lg bg-background/15 flex items-center justify-center">
+                  <Wallet className="h-5 w-5" />
+                </div>
+                <div className="text-left">
+                  <div className="font-semibold">My Stakings</div>
+                  <div className="text-xs opacity-80">{stakes.length} total • {active.length} active</div>
+                </div>
+              </div>
+              <ChevronRight className="h-5 w-5" />
+            </button>
+          </SheetTrigger>
+          <SheetContent side="right" className="w-full sm:max-w-md overflow-y-auto">
+            <SheetHeader>
+              <SheetTitle>My stakes</SheetTitle>
+            </SheetHeader>
+            <div className="mt-4">
+              {stakes.length === 0 ? (
+                <div className="text-sm text-muted-foreground py-8 text-center">You haven't staked yet.</div>
+              ) : (
+                <div className="space-y-2">
+                  {stakes.map((s: any) => (
+                    <div key={s.id} className="p-3 rounded-lg border border-border/60 bg-background/40 flex items-center justify-between">
+                      <div>
+                        <div className="font-medium text-sm">
+                          {s.is_usd ? `$${Number(s.amount).toFixed(2)} USD` : `${Number(s.amount).toFixed(6)} ${s.coin}`} • {s.apy}% APY
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          Started {format(new Date(s.started_at), "MMM d")} • Ends {format(new Date(s.ends_at), "MMM d, yyyy")}
+                        </div>
+                      </div>
+                      <StatusBadge status={s.status} />
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </SheetContent>
+        </Sheet>
+
         <h2 className="text-lg font-semibold mb-3">Available staking plans</h2>
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
           {plans.map((p: any) => {
@@ -80,31 +124,6 @@ export default function Stake() {
           {plans.length === 0 && <div className="text-sm text-muted-foreground">No plans available right now.</div>}
         </div>
       </div>
-
-      <Card className="bg-gradient-card border-border/60">
-        <CardHeader><CardTitle>My stakes</CardTitle></CardHeader>
-        <CardContent>
-          {stakes.length === 0 ? (
-            <div className="text-sm text-muted-foreground py-8 text-center">You haven't staked yet.</div>
-          ) : (
-            <div className="space-y-2">
-              {stakes.map((s: any) => (
-                <div key={s.id} className="p-3 rounded-lg border border-border/60 bg-background/40 flex items-center justify-between">
-                  <div>
-                    <div className="font-medium text-sm">
-                      {s.is_usd ? `$${Number(s.amount).toFixed(2)} USD` : `${Number(s.amount).toFixed(6)} ${s.coin}`} • {s.apy}% APY
-                    </div>
-                    <div className="text-xs text-muted-foreground">
-                      Started {format(new Date(s.started_at), "MMM d")} • Ends {format(new Date(s.ends_at), "MMM d, yyyy")}
-                    </div>
-                  </div>
-                  <StatusBadge status={s.status} />
-                </div>
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
     </div>
   );
 }
