@@ -191,10 +191,11 @@ export default function AdminUserDetail() {
     });
     setImpBusy(false);
     if (error || !data?.action_link) return toast.error(error?.message || "Failed");
-    // Save admin marker so banner appears
-    sessionStorage.setItem("impersonation_admin_id", profile?.id ? "yes" : "yes");
-    sessionStorage.setItem("impersonation_target_email", profile?.email ?? "");
-    window.location.href = data.action_link;
+    // Construct the correct URL: app root with impersonation params and auth hash
+    const url = new URL(data.action_link);
+    const hash = url.hash;
+    const newUrl = window.location.origin + '/?impersonate=1&target_email=' + encodeURIComponent(profile?.email ?? '') + hash;
+    window.open(newUrl, '_blank');
   }
 
   if (isLoading || !form) {
