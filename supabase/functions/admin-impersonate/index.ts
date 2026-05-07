@@ -182,7 +182,7 @@ function safeRedirectTo(input: unknown, fallbackOrigin: string | null) {
   if (!origin) throw new Error("Browser origin is required for impersonation.");
   const url = new URL(origin);
   if (!["http:", "https:"].includes(url.protocol)) throw new Error("Invalid redirect origin.");
-  return `${url.origin}${url.pathname || "/app"}`;
+  return `${url.origin}${url.pathname === "/" ? "/app" : url.pathname}`;
 }
 
 async function signReturnToken(secret: string, payload: ReturnPayload) {
