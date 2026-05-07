@@ -32,7 +32,10 @@ export function ImpersonationBanner() {
 
     setBusy(true);
     const state = readImpersonationState();
-    if (!state) return toast.error("Impersonation return state is invalid. Please sign in as admin again.");
+    if (!state) {
+      setBusy(false);
+      return toast.error("Impersonation return state is invalid. Please sign in as admin again.");
+    }
     const returnPath = state.adminReturnPath || "/admin";
     const { data, error } = await supabase.functions.invoke("admin-impersonate", {
       body: {
