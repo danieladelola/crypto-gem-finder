@@ -16,7 +16,7 @@ import { toast } from "sonner";
 import { format } from "date-fns";
 import {
   ArrowLeft, Save, Loader2, ShieldOff, Shield, KeyRound, Plus, Minus,
-  History, Bell, Ban, ShoppingBag, TrendingUp, ArrowDownToLine, ArrowUpFromLine, Mail
+  History, Bell, Ban, ShoppingBag, TrendingUp, ArrowDownToLine, ArrowUpFromLine, Mail, LogIn
 } from "lucide-react";
 
 const KYC_OPTIONS = ["none", "unverified", "pending", "approved", "rejected"];
@@ -100,6 +100,7 @@ export default function AdminUserDetail() {
 
   const [form, setForm] = useState<any>(null);
   const [saving, setSaving] = useState(false);
+  const [impersonating, setImpersonating] = useState(false);
   useEffect(() => { if (profile) setForm(profile); }, [profile]);
 
   // Adjust balance
@@ -197,6 +198,41 @@ export default function AdminUserDetail() {
     qc.invalidateQueries({ queryKey: ["admin-user", id] });
   }
 
+  async function loginAsUser() {
+    setImpersonating(true);
+    const dashboardUrl = `${window.location.origin}/app`;
+    const adminReturnPath = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+    const { data, error } = await supabase.functions.invoke("admin-impersonate", {
+      body: { action: "impersonate", target_user_id: id, redirect_to: dashboardUrl },
+    });
+    if (error || data?.error) {
+      setImpersonating(false);
+      return toast.error(data?.error ?? error?.message ?? "Could not start impersonation");
+    }
+
+    const { error: sessionError } = await supabase.auth.verifyOtp({
+      token_hash: data.token_hash,
+      type: data.verification_type ?? "magiclink",
+    } as any);
+    if (sessionError) {
+      setImpersonating(false);
+      return toast.error(`Impersonation failed: ${sessionError.message}`);
+    }
+
+    sessionStorage.setItem("impersonation", JSON.stringify({
+      originalAdminId: data.admin_id,
+      impersonatedUserId: data.target_user_id,
+      impersonatedEmail: data.email,
+      logId: data.log_id,
+      returnToken: data.return_token,
+      adminReturnPath,
+    }));
+    sessionStorage.setItem("impersonation_admin_id", data.admin_id);
+    sessionStorage.setItem("impersonation_target_email", data.email);
+    toast.success("Logged in as selected user");
+    window.location.assign(dashboardUrl);
+  }
+
   if (isLoading || !form) {
     return <div className="flex items-center justify-center py-20"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>;
   }
@@ -241,6 +277,10 @@ export default function AdminUserDetail() {
           <Button size="sm" variant="secondary" onClick={() => setNotifOpen(true)}><Bell className="h-4 w-4 mr-1" />Notifications</Button>
           <Button size="sm" variant={profile.banned ? "outline" : "destructive"} onClick={() => setBanOpen(true)}>
             <Ban className="h-4 w-4 mr-1" />{profile.banned ? "Unban User" : "Ban User"}
+          </Button>
+          <Button size="sm" variant="outline" onClick={loginAsUser} disabled={impersonating}>
+            {impersonating ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <LogIn className="h-4 w-4 mr-1" />}
+            Login as User
           </Button>
           <Button size="sm" variant="outline" onClick={confirmEmailServer}><Mail className="h-4 w-4 mr-1" />Confirm Email (auth)</Button>
         </CardContent>
