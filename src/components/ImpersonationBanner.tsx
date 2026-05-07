@@ -14,7 +14,8 @@ export function ImpersonationBanner() {
 
   useEffect(() => {
     if (!user) return setActive(false);
-    setActive(sessionStorage.getItem("impersonation_target_email") === user.email);
+    const state = readImpersonationState();
+    setActive(state?.impersonatedUserId === user.id || state?.impersonatedEmail === user.email || sessionStorage.getItem("impersonation_target_email") === user.email);
   }, [user]);
 
   if (!active) return null;
@@ -30,7 +31,8 @@ export function ImpersonationBanner() {
     }
 
     setBusy(true);
-    const state = JSON.parse(raw);
+    const state = readImpersonationState();
+    if (!state) return toast.error("Impersonation return state is invalid. Please sign in as admin again.");
     const returnPath = state.adminReturnPath || "/admin";
     const { data, error } = await supabase.functions.invoke("admin-impersonate", {
       body: {
@@ -67,4 +69,13 @@ export function ImpersonationBanner() {
       </Button>
     </div>
   );
+}
+
+function readImpersonationState(): any | null {
+  try {
+    const raw = sessionStorage.getItem("impersonation");
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
 }
