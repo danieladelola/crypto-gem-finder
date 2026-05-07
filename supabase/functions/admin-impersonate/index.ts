@@ -87,7 +87,6 @@ Deno.serve(async (req) => {
       const { data: link, error: linkErr } = await admin.auth.admin.generateLink({
         type: "magiclink",
         email: targetEmail,
-        options: { redirectTo },
       });
       const tokenHash = link?.properties?.hashed_token;
       if (linkErr || !tokenHash) return json({ error: linkErr?.message ?? "Could not create impersonation session." }, 400);
@@ -143,7 +142,6 @@ async function endImpersonation(admin: any, secret: string, callerId: string, bo
   const { data: link, error: linkErr } = await admin.auth.admin.generateLink({
     type: "magiclink",
     email: payload.admin_email,
-    options: { redirectTo },
   });
   const tokenHash = link?.properties?.hashed_token;
   if (linkErr || !tokenHash) return json({ error: linkErr?.message ?? "Could not restore admin session." }, 400);
